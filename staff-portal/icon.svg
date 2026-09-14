@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1220"/>
+      <stop offset="100%" stop-color="#172334"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38a9ff"/>
+      <stop offset="100%" stop-color="#1d74d8"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5e1a4"/>
+      <stop offset="100%" stop-color="#d4af37"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#1d74d8" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle gold border ring -->
+  <rect x="16" y="16" width="480" height="480" rx="98" fill="none" stroke="url(#goldGrad)" stroke-width="6" opacity="0.85"/>
+
+  <!-- Center emblem: Stylized "P" -->
+  <g filter="url(#glow)">
+    <!-- Vertical stem -->
+    <path d="M 170 130 L 225 130 L 225 382 L 170 382 Z" fill="url(#accentGrad)" rx="6"/>
+    <!-- Curved bowl -->
+    <path d="M 225 130 C 320 130, 355 160, 355 225 C 355 290, 320 320, 225 320 L 225 265 C 285 265, 300 245, 300 225 C 300 205, 285 185, 225 185 Z" fill="url(#accentGrad)"/>
+    <!-- Gold accent dot inside bowl -->
+    <circle cx="260" cy="225" r="18" fill="url(#goldGrad)"/>
+  </g>
+
+  <!-- "PHENMO" bottom text -->
+  <text x="256" y="440" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="800" letter-spacing="8" fill="#ffffff">PHENMO</text>
+  <text x="256" y="470" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="600" letter-spacing="6" fill="#d4af37">STAFF APP</text>
+</svg>
+

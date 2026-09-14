@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phenmo Staff Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <meta name="theme-color" content="#0b1220">
+</head>
+<body class="portal-body login-page" data-page="login">
+
+    <div class="portal-shell">
+        <div class="portal-panel login-panel">
+            <div class="brand-block">
+                <img src="../phenmo-logo.jpg" alt="Phenmo Events Logo" class="portal-logo">
+                <p class="brand-kicker">PHENMO EVENTS</p>
+            </div>
+
+            <!-- STAGE 1: Portal Master Security Gate (All-Round Access Code) -->
+            <div id="portal-gate-panel" class="portal-gate-panel">
+                <div class="gate-header">
+                    <span class="gate-badge">🔒 Security Checkpoint</span>
+                    <h1>Staff Portal Access</h1>
+                    <p class="login-subtitle">
+                        Enter the master access code to unlock internal staff profiles
+                    </p>
+                </div>
+
+                <form id="portal-gate-form" class="portal-gate-form" autocomplete="off">
+                    <div class="login-field-group">
+                        <div class="field-label-row">
+                            <label for="gate-password-input" class="field-label">Master Portal Code</label>
+                            <span class="field-tag">All-Round Password</span>
+                        </div>
+                        <input id="gate-password-input" class="login-input" type="password" placeholder="Enter master access code" required autofocus autocomplete="off">
+                    </div>
+                    <div id="gate-error-msg" class="login-error-msg hidden" role="alert"></div>
+                    <button id="gate-submit-btn" class="primary-btn login-submit-btn" type="submit">
+                        Unlock Staff Portal 🔓
+                    </button>
+                    <p class="gate-hint">🔒 Protected staff area. Contact Admin Steve if you need the portal access code.</p>
+                </form>
+            </div>
+
+            <!-- STAGE 2: Account Selection & Individual Password (Shown after Master Gate is unlocked) -->
+            <div id="portal-auth-panel" class="portal-auth-panel hidden">
+                <div class="auth-header">
+                    <span class="gate-badge unlocked">✅ Portal Unlocked</span>
+                    <h1>Select Staff Account</h1>
+                    <p class="login-subtitle">
+                        Choose your account and enter your personal password
+                    </p>
+                </div>
+
+                <!-- 3 Accounts: Admin, Manager, Technician -->
+                <div class="account-select-grid" id="account-select-grid" role="radiogroup" aria-label="Staff Accounts">
+                    <button type="button" class="account-select-card is-selected" data-account-id="steve" role="radio" aria-checked="true">
+                        <div class="account-card-icon">🛡️</div>
+                        <div class="account-card-content">
+                            <span class="account-role-tag admin-tag">ADMIN</span>
+                            <strong class="account-person-name">Steve</strong>
+                            <span class="account-role-desc">Full System & Inventory Control</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="account-select-card" data-account-id="mariah" role="radio" aria-checked="false">
+                        <div class="account-card-icon">📋</div>
+                        <div class="account-card-content">
+                            <span class="account-role-tag manager-tag">MANAGER</span>
+                            <strong class="account-person-name">Mariah</strong>
+                            <span class="account-role-desc">Event Planning & Allocations</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="account-select-card" data-account-id="dave" role="radio" aria-checked="false">
+                        <div class="account-card-icon">🔧</div>
+                        <div class="account-card-content">
+                            <span class="account-role-tag tech-tag">TECHNICIAN</span>
+                            <strong class="account-person-name">Dave</strong>
+                            <span class="account-role-desc">Gear Scanner & Operations</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Personal Password Form for Selected Account -->
+                <form id="account-login-form" class="account-login-form" autocomplete="on">
+                    <div class="login-field-group">
+                        <div class="field-label-row">
+                            <label for="account-password-input" class="field-label" id="account-password-label">Password for Steve (Admin)</label>
+                            <span class="field-tag">Default: 0000 on first login</span>
+                        </div>
+                        <input id="account-password-input" class="login-input" type="password" placeholder="Enter personal password" required autocomplete="current-password">
+                    </div>
+                    <div id="account-login-error-msg" class="login-error-msg hidden" role="alert"></div>
+                    <button id="account-login-submit-btn" class="primary-btn login-submit-btn" type="submit">
+                        Sign In as Steve (Admin) 🚀
+                    </button>
+                </form>
+
+                <div class="gate-lock-action">
+                    <button type="button" class="lock-gate-btn" id="lock-gate-btn">
+                        🔒 Lock Portal Gate
+                    </button>
+                </div>
+            </div>
+
+            <!-- STAGE 3: First-Time Account Setup Wizard Panel (Triggered if default 0000 code is used) -->
+            <div id="first-time-setup-panel" class="first-time-setup-panel hidden">
+                <div class="setup-header">
+                    <span class="setup-badge">✨ First-Time Activation</span>
+                    <h2 id="setup-title">Activate Staff Account</h2>
+                    <p class="setup-subtitle">
+                        Welcome, <strong id="setup-staff-name">Staff Member</strong>! Please enter your permanent work email and set your personal password. Admin Steve will receive an automated activation alert.
+                    </p>
+                </div>
+
+                <form id="setup-form" class="setup-form" autocomplete="off">
+                    <div class="login-field-group">
+                        <label for="setup-email-input" class="field-label">Permanent Work Email <span class="required-star">*</span></label>
+                        <input id="setup-email-input" class="login-input" type="email" placeholder="e.g. dave@phenmoevents.co.ke" required autocomplete="email">
+                        <small class="field-hint">This email will be permanently linked to your profile for future logins.</small>
+                    </div>
+
+                    <div class="login-field-group">
+                        <label for="setup-password-input" class="field-label">New Personal Password <span class="required-star">*</span></label>
+                        <input id="setup-password-input" class="login-input" type="password" placeholder="Minimum 4 characters (different from 0000)" required autocomplete="new-password">
+                    </div>
+
+                    <div class="login-field-group">
+                        <label for="setup-confirm-input" class="field-label">Confirm New Password <span class="required-star">*</span></label>
+                        <input id="setup-confirm-input" class="login-input" type="password" placeholder="Re-type new password" required autocomplete="new-password">
+                    </div>
+
+                    <div id="setup-error-msg" class="setup-error-msg hidden" role="alert"></div>
+
+                    <div class="setup-actions">
+                        <button id="setup-submit-btn" class="primary-btn setup-cta-btn" type="submit">
+                            Activate Account & Enter Portal 🚀
+                        </button>
+                        <button id="setup-cancel-btn" class="secondary-btn setup-cancel-btn" type="button">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="login-footer-actions">
+                <a href="../index.html" class="portal-back-link">&larr; Back to Website</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="inventory-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phenmo Event Plan</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#0b1220">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Phenmo Staff">
+</head>
+<body class="portal-body plan-page" data-page="plan">
+    <div class="portal-shell wide-shell">
+        <header class="topbar">
+            <div class="topbar-left">
+                <img src="../phenmo-logo.jpg" alt="Phenmo Events Logo" class="portal-logo small-logo">
+                <div>
+                    <p class="topbar-label">PHENMO EVENTS</p>
+                    <h2>Event Plan</h2>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <div id="current-user-badge" class="user-badge"></div>
+                <button id="scan-gear-button" class="secondary-btn action-scan-btn" type="button">📷 Scan Gear</button>
+                <button id="install-app-button" class="secondary-btn action-install-btn" type="button">📲 Install App</button>
+                <a href="dashboard.html" class="secondary-btn link-btn">Dashboard</a>
+                <button id="logout-button" class="secondary-btn" type="button">Log out</button>
+            </div>
+        </header>
+
+        <main class="plan-main">
+            <div class="panel plan-panel">
+                <div class="panel-header tight">
+                    <div>
+                        <p class="panel-kicker">PLAN DETAILS</p>
+                        <h3 id="plan-title">New Event Plan</h3>
+                    </div>
+
+                    <div class="plan-header-actions">
+                        <a id="venue-nav-btn" class="secondary-btn venue-nav-link hidden" target="_blank" rel="noopener noreferrer">📍 Navigate to Venue</a>
+                        <a href="dashboard.html" class="secondary-btn link-btn">Back to dashboard</a>
+                    </div>
+                </div>
+
+                <form id="plan-form">
+                    <div class="form-grid">
+                        <label>
+                            <span>Event name</span>
+                            <input id="event-name" name="eventName" type="text" required>
+                        </label>
+
+                        <label>
+                            <span>Client name</span>
+                            <input id="client-name" name="clientName" type="text" required>
+                        </label>
+
+                        <label>
+                            <span>Client phone / contact</span>
+                            <input id="client-phone" name="clientPhone" type="tel" placeholder="e.g. +254 743 409896">
+                        </label>
+
+                        <label>
+                            <span>Event date</span>
+                            <input id="event-date" name="eventDate" type="date" required>
+                        </label>
+
+                        <label>
+                            <span>Venue</span>
+                            <div class="venue-input-wrap">
+                                <input id="venue" name="venue" type="text" required>
+                                <button type="button" id="open-maps-inline-btn" class="inline-action-btn" title="Open in Google Maps">📍</button>
+                            </div>
+                        </label>
+
+                        <label>
+                            <span>Start time</span>
+                            <input id="start-time" name="startTime" type="time" required>
+                        </label>
+
+                        <label>
+                            <span>End time</span>
+                            <input id="end-time" name="endTime" type="time" required>
+                        </label>
+
+                        <label>
+                            <span>Setup time</span>
+                            <input id="setup-time" name="setupTime" type="time" required>
+                        </label>
+
+                        <label>
+                            <span>Breakdown time</span>
+                            <input id="breakdown-time" name="breakdownTime" type="time" required>
+                        </label>
+
+                        <label>
+                            <span>Assigned staff</span>
+                            <select id="assigned-to" name="assignedTo"></select>
+                        </label>
+
+                        <label>
+                            <span>Status</span>
+                            <select id="status" name="status">
+                                <option value="Planned">Planned</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <label>
+                        <span>Booked equipment overview</span>
+                        <textarea id="equipment-booked" name="equipmentBooked" rows="3" placeholder="List key equipment items booked for quick reference"></textarea>
+                    </label>
+
+                    <label>
+                        <span>Planning notes</span>
+                        <textarea id="notes" name="notes" rows="4" placeholder="Add event reminders, setup notes, staffing updates, and timing details"></textarea>
+                    </label>
+
+                    <div class="form-actions">
+                        <button id="save-plan-button" class="primary-btn" type="submit">Save plan</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="panel inventory-panel">
+                <div class="panel-header tight">
+                    <div>
+                        <p class="panel-kicker">INVENTORY</p>
+                        <h3>Book equipment & inspect returns</h3>
+                    </div>
+                </div>
+
+                <div class="inventory-toolbar plan-inventory-toolbar">
+                    <div class="inventory-search-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input id="plan-inventory-search" class="inventory-search-input" type="text" placeholder="Search gear by name, model (e.g. KW153), or serial #..." autocomplete="off">
+                        <button id="plan-inventory-search-clear" class="search-clear-btn hidden" type="button" aria-label="Clear search">✕</button>
+                    </div>
+                </div>
+
+                <div class="inventory-layout">
+                    <div id="inventory-categories" class="inventory-categories" aria-label="Inventory categories"></div>
+
+                    <div class="inventory-list-panel">
+                        <div id="inventory-list" class="inventory-list"></div>
+                    </div>
+
+                    <div class="inventory-selected-panel">
+                        <h4>Selected items</h4>
+                        <div id="inventory-selected-list" class="inventory-selected-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Gear Scanner Modal -->
+    <div id="gear-scanner-modal" class="gear-scanner-modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanner-modal-title">
+        <div class="scanner-dialog">
+            <div class="scanner-dialog-header">
+                <h3 id="scanner-modal-title">📷 Equipment Scanner</h3>
+                <button type="button" class="scanner-close-btn" id="scanner-close-btn" aria-label="Close scanner">✕</button>
+            </div>
+
+            <div class="scanner-body">
+                <div class="camera-viewport-wrap">
+                    <video id="scanner-video" class="scanner-video" autoplay playsinline muted></video>
+                    <div class="scanner-overlay-reticle">
+                        <div class="reticle-corner top-left"></div>
+                        <div class="reticle-corner top-right"></div>
+                        <div class="reticle-corner bottom-left"></div>
+                        <div class="reticle-corner bottom-right"></div>
+                        <div class="reticle-laser"></div>
+                    </div>
+                </div>
+
+                <div class="scanner-status-msg" id="scanner-status-msg">
+                    Point camera at equipment QR code or flight case barcode
+                </div>
+
+                <div class="scanner-manual-fallback">
+                    <label for="scanner-manual-select">Or select item directly:</label>
+                    <div class="scanner-manual-row">
+                        <select id="scanner-manual-select" class="scanner-manual-select">
+                            <option value="">-- Choose equipment item --</option>
+                        </select>
+                        <button id="scanner-manual-search-btn" class="secondary-btn" type="button">Look Up</button>
+                    </div>
+                </div>
+
+                <div id="scanner-result-card" class="scanner-result-card hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-lightbox-modal" class="photo-lightbox-modal hidden" role="dialog" aria-modal="true">
+        <div class="lightbox-content">
+            <button type="button" class="lightbox-close-btn" id="lightbox-close-btn" aria-label="Close photo">✕</button>
+            <img id="lightbox-img" src="" alt="Equipment Damage Inspection">
+            <p id="lightbox-caption" class="lightbox-caption"></p>
+        </div>
+    </div>
+
+    <!-- Reusable Install Guide Modal -->
+    <div id="install-guide-modal" class="install-guide-modal hidden" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+        <div class="install-guide-dialog">
+            <div class="install-guide-header">
+                <div class="install-guide-title-wrap">
+                    <img src="icon.svg" alt="Phenmo Staff App" class="install-guide-icon">
+                    <div>
+                        <h3 id="install-guide-title">Install Phenmo Staff App</h3>
+                        <p class="install-guide-subtitle">Standalone application for phones & computers</p>
+                    </div>
+                </div>
+                <button type="button" class="install-guide-close" id="install-guide-close-btn" aria-label="Close">✕</button>
+            </div>
+
+            <div class="install-guide-body">
+                <div class="quick-install-box">
+                    <p id="device-detected-badge" class="device-detected-badge">Checking device...</p>
+                    <button type="button" id="trigger-one-click-install-btn" class="primary-btn one-click-install-btn">
+                        📲 Install Now on This Device
+                    </button>
+                    <p class="quick-install-note">No app store download required • Zero installation fee</p>
+                </div>
+
+                <div class="install-platform-tabs">
+                    <button type="button" class="platform-tab-btn is-active" data-install-tab="android">📱 Android</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="windows">💻 Windows PC</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="ios">🍏 iPhone (iOS)</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="mac">🍎 Mac</button>
+                </div>
+
+                <!-- Android Instructions -->
+                <div class="platform-instructions-panel" data-platform-panel="android">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Google Chrome</strong> or <strong>Samsung Internet</strong> on your Android phone.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Tap the <strong>"📲 Install Now"</strong> button above, or tap the Chrome menu (<strong>⋮</strong> three dots) and select <strong>"Install app"</strong> (or <strong>"Add to Home screen"</strong>).</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>The <strong>Phenmo Staff</strong> icon will appear on your home screen and app drawer. Tap it to launch full-screen anytime!</p>
+                    </div>
+                </div>
+
+                <!-- Windows Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="windows">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Microsoft Edge</strong> or <strong>Google Chrome</strong> on your Windows PC or laptop.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Click the <strong>"📲 Install Now"</strong> button above, or click the <strong>Install icon</strong> (computer monitor with down arrow, or <strong>+</strong> icon) in the right side of the browser address bar.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Click <strong>"Install"</strong>. Phenmo Staff opens in its own clean window and pins directly to your <strong>Windows Taskbar and Start Menu</strong>!</p>
+                    </div>
+                </div>
+
+                <!-- iOS Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="ios">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Safari</strong> on your iPhone or iPad.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Tap the <strong>Share</strong> button at the bottom of the screen (the square with an arrow pointing upward <strong>⎋</strong>).</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Scroll down and tap <strong>"Add to Home Screen"</strong>, then tap <strong>"Add"</strong> in the top-right corner. It installs right on your iPhone home screen!</p>
+                    </div>
+                </div>
+
+                <!-- Mac Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="mac">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Google Chrome</strong> or <strong>Safari</strong> on your Mac.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>In Chrome: click the <strong>Install icon</strong> in the URL address bar. In Safari: choose <strong>File → Add to Dock</strong>.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Phenmo Staff will run as a native Mac window pinned in your Dock!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="inventory-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phenmo Staff Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="theme-color" content="#0b1220">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Phenmo Staff">
+</head>
+<body class="portal-body dashboard-page" data-page="dashboard">
+    <!-- PWA Install Banner (Triggered if not installed) -->
+    <div id="app-install-banner" class="app-install-banner hidden">
+        <div class="install-banner-content">
+            <img src="icon.svg" alt="Phenmo App Icon" class="install-banner-icon">
+            <div class="install-banner-text">
+                <strong>Install Phenmo Staff App</strong>
+                <p>Add to your phone for 1-tap offline access</p>
+            </div>
+        </div>
+        <div class="install-banner-actions">
+            <button id="pwa-install-btn" class="primary-btn install-cta-btn" type="button">Install</button>
+            <button id="pwa-dismiss-btn" class="install-close-btn" type="button" aria-label="Dismiss">✕</button>
+        </div>
+    </div>
+
+    <div class="portal-shell wide-shell">
+        <header class="topbar">
+            <div class="topbar-left">
+                <img src="../phenmo-logo.jpg" alt="Phenmo Events Logo" class="portal-logo small-logo">
+                <div>
+                    <p class="topbar-label">PHENMO EVENTS</p>
+                    <h2>Staff Dashboard</h2>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <div id="current-user-badge" class="user-badge"></div>
+                <button id="scan-gear-button" class="secondary-btn action-scan-btn" type="button">📷 Scan Gear</button>
+                <button id="install-app-button" class="secondary-btn action-install-btn" type="button">📲 Install App</button>
+                <button id="inventory-button" class="secondary-btn" type="button">Inventory</button>
+                <button id="change-password-button" class="secondary-btn" type="button">Change Password</button>
+                <a href="../index.html" class="secondary-btn link-btn">Website</a>
+                <button id="logout-button" class="secondary-btn" type="button">Log out</button>
+            </div>
+        </header>
+
+        <main class="dashboard-main">
+            <section class="stats-grid" id="stats-grid"></section>
+            <section id="inventory-alerts" class="inventory-alerts"></section>
+            <section id="returned-items-panel" class="returned-items-panel-wrap"></section>
+            <section id="messages-panel" class="messages-panel-wrap"></section>
+
+            <section class="panel" id="events-section">
+                <div class="panel-header">
+                    <div>
+                        <p class="panel-kicker">EVENT PLANS</p>
+                        <h3>Upcoming Work</h3>
+                    </div>
+
+                    <button id="new-plan-button" class="primary-btn" type="button">+ Create Event Plan</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event & Venue</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Assigned</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="event-table-body"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (< 768px) -->
+    <nav class="mobile-bottom-nav" aria-label="Staff navigation">
+        <button type="button" class="mob-nav-item is-active" data-mob-nav="dashboard">
+            <span class="mob-nav-icon">📊</span>
+            <span class="mob-nav-label">Dashboard</span>
+        </button>
+        <button type="button" class="mob-nav-item" data-mob-nav="events">
+            <span class="mob-nav-icon">📋</span>
+            <span class="mob-nav-label">Events</span>
+        </button>
+        <button type="button" class="mob-nav-item mob-scan-item" data-mob-nav="scan">
+            <span class="mob-nav-icon">📷</span>
+            <span class="mob-nav-label">Scan Gear</span>
+        </button>
+        <button type="button" class="mob-nav-item" data-mob-nav="inventory">
+            <span class="mob-nav-icon">📦</span>
+            <span class="mob-nav-label">Stock</span>
+        </button>
+        <button type="button" class="mob-nav-item" data-mob-nav="messages">
+            <span class="mob-nav-icon">💬</span>
+            <span class="mob-nav-label">Chat</span>
+        </button>
+    </nav>
+
+    <!-- Gear Scanner & Quick Action Modal -->
+    <div id="gear-scanner-modal" class="gear-scanner-modal hidden" role="dialog" aria-modal="true" aria-labelledby="scanner-modal-title">
+        <div class="scanner-dialog">
+            <div class="scanner-dialog-header">
+                <h3 id="scanner-modal-title">📷 Equipment Scanner</h3>
+                <button type="button" class="scanner-close-btn" id="scanner-close-btn" aria-label="Close scanner">✕</button>
+            </div>
+
+            <div class="scanner-body">
+                <div class="camera-viewport-wrap">
+                    <video id="scanner-video" class="scanner-video" autoplay playsinline muted></video>
+                    <div class="scanner-overlay-reticle">
+                        <div class="reticle-corner top-left"></div>
+                        <div class="reticle-corner top-right"></div>
+                        <div class="reticle-corner bottom-left"></div>
+                        <div class="reticle-corner bottom-right"></div>
+                        <div class="reticle-laser"></div>
+                    </div>
+                </div>
+
+                <div class="scanner-status-msg" id="scanner-status-msg">
+                    Point camera at equipment QR code or flight case barcode
+                </div>
+
+                <div class="scanner-manual-fallback">
+                    <label for="scanner-manual-select">Or select item directly:</label>
+                    <div class="scanner-manual-row">
+                        <select id="scanner-manual-select" class="scanner-manual-select">
+                            <option value="">-- Choose equipment item --</option>
+                        </select>
+                        <button id="scanner-manual-search-btn" class="secondary-btn" type="button">Look Up</button>
+                    </div>
+                </div>
+
+                <!-- Scanned Result Card -->
+                <div id="scanner-result-card" class="scanner-result-card hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable Install Guide Modal -->
+    <div id="install-guide-modal" class="install-guide-modal hidden" role="dialog" aria-modal="true" aria-labelledby="install-guide-title">
+        <div class="install-guide-dialog">
+            <div class="install-guide-header">
+                <div class="install-guide-title-wrap">
+                    <img src="icon.svg" alt="Phenmo Staff App" class="install-guide-icon">
+                    <div>
+                        <h3 id="install-guide-title">Install Phenmo Staff App</h3>
+                        <p class="install-guide-subtitle">Standalone application for phones & computers</p>
+                    </div>
+                </div>
+                <button type="button" class="install-guide-close" id="install-guide-close-btn" aria-label="Close">✕</button>
+            </div>
+
+            <div class="install-guide-body">
+                <div class="quick-install-box">
+                    <p id="device-detected-badge" class="device-detected-badge">Checking device...</p>
+                    <button type="button" id="trigger-one-click-install-btn" class="primary-btn one-click-install-btn">
+                        📲 Install Now on This Device
+                    </button>
+                    <p class="quick-install-note">No app store download required • Zero installation fee</p>
+                </div>
+
+                <div class="install-platform-tabs">
+                    <button type="button" class="platform-tab-btn is-active" data-install-tab="android">📱 Android</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="windows">💻 Windows PC</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="ios">🍏 iPhone (iOS)</button>
+                    <button type="button" class="platform-tab-btn" data-install-tab="mac">🍎 Mac</button>
+                </div>
+
+                <!-- Android Instructions -->
+                <div class="platform-instructions-panel" data-platform-panel="android">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Google Chrome</strong> or <strong>Samsung Internet</strong> on your Android phone.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Tap the <strong>"📲 Install Now"</strong> button above, or tap the Chrome menu (<strong>⋮</strong> three dots) and select <strong>"Install app"</strong> (or <strong>"Add to Home screen"</strong>).</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>The <strong>Phenmo Staff</strong> icon will appear on your home screen and app drawer. Tap it to launch full-screen anytime!</p>
+                    </div>
+                </div>
+
+                <!-- Windows Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="windows">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Microsoft Edge</strong> or <strong>Google Chrome</strong> on your Windows PC or laptop.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Click the <strong>"📲 Install Now"</strong> button above, or click the <strong>Install icon</strong> (computer monitor with down arrow, or <strong>+</strong> icon) in the right side of the browser address bar.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Click <strong>"Install"</strong>. Phenmo Staff opens in its own clean window and pins directly to your <strong>Windows Taskbar and Start Menu</strong>!</p>
+                    </div>
+                </div>
+
+                <!-- iOS Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="ios">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Safari</strong> on your iPhone or iPad.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>Tap the <strong>Share</strong> button at the bottom of the screen (the square with an arrow pointing upward <strong>⎋</strong>).</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Scroll down and tap <strong>"Add to Home Screen"</strong>, then tap <strong>"Add"</strong> in the top-right corner. It installs right on your iPhone home screen!</p>
+                    </div>
+                </div>
+
+                <!-- Mac Instructions -->
+                <div class="platform-instructions-panel hidden" data-platform-panel="mac">
+                    <div class="install-step">
+                        <span class="step-num">1</span>
+                        <p>Open this portal in <strong>Google Chrome</strong> or <strong>Safari</strong> on your Mac.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">2</span>
+                        <p>In Chrome: click the <strong>Install icon</strong> in the URL address bar. In Safari: choose <strong>File → Add to Dock</strong>.</p>
+                    </div>
+                    <div class="install-step">
+                        <span class="step-num">3</span>
+                        <p>Phenmo Staff will run as a native Mac window pinned in your Dock!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Lightbox Modal -->
+    <div id="photo-lightbox-modal" class="photo-lightbox-modal hidden" role="dialog" aria-modal="true">
+        <div class="lightbox-content">
+            <button type="button" class="lightbox-close-btn" id="lightbox-close-btn" aria-label="Close photo">✕</button>
+            <img id="lightbox-img" src="" alt="Equipment Damage Inspection">
+            <p id="lightbox-caption" class="lightbox-caption"></p>
+        </div>
+    </div>
+
+    <script src="inventory-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

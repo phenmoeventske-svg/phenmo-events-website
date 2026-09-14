@@ -1,0 +1,50 @@
+{
+  "name": "Phenmo Events Staff App",
+  "short_name": "Phenmo Staff",
+  "description": "Mobile operations app for Phenmo Events crew: event timelines, equipment scanning, return inspections, and inventory tracking.",
+  "start_url": "dashboard.html",
+  "scope": "/staff-portal/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
+  "theme_color": "#1d74d8",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "phenmo-logo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan Gear",
+      "short_name": "Scan",
+      "description": "Camera barcode and QR scanner for equipment",
+      "url": "dashboard.html?action=scan",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Inventory Manager",
+      "short_name": "Inventory",
+      "description": "View and update equipment stock",
+      "url": "inventory.html",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "New Event Plan",
+      "short_name": "New Plan",
+      "description": "Create an event plan and book gear",
+      "url": "plan.html",
+      "icons": [{ "src": "icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}
+
