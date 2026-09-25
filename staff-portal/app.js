@@ -1,11 +1,12 @@
-const STORAGE_KEY = 'phenmo-staff-portal-v1';
+const STORAGE_KEY = 'phenmo-staff-portal-v2';
+const LEGACY_STORAGE_KEYS = ['phenmo-staff-portal-v1', 'phenmo_events_staff_state'];
 const CURRENT_USER_KEY = 'phenmo-current-user';
 const DEFAULT_PASSWORD = '0000';
 
 const sampleState = {
     accounts: [
-        { id: 'steve', name: 'Steve', role: 'Admin', email: 'steve@phenmoevents.co.ke', password: DEFAULT_PASSWORD },
-        { id: 'mariah', name: 'Mariah', role: 'Manager', email: 'mariah@phenmoevents.co.ke', password: DEFAULT_PASSWORD },
+        { id: 'steve', name: 'Steve', role: 'Managing Director', email: 'steve@phenmoevents.co.ke', password: DEFAULT_PASSWORD },
+        { id: 'mariah', name: 'Mariah', role: 'Admin', email: 'mariah@phenmoevents.co.ke', password: DEFAULT_PASSWORD },
         { id: 'dave', name: 'Dave', role: 'Technician', email: 'dave@phenmoevents.co.ke', password: DEFAULT_PASSWORD }
     ],
     events: [
@@ -99,6 +100,7 @@ function normalizeStoredState(savedState) {
         return {
             ...defaultAccount,
             ...(savedAccount || {}),
+            role: defaultAccount.role,
             password: savedPassword || defaultAccount.password
         };
     });
@@ -109,7 +111,13 @@ function normalizeStoredState(savedState) {
         || savedState.inventory.length === 0
         || savedState.inventory.every((cat) => !Array.isArray(cat.items) || cat.items.length === 0);
 
-    if (hasRealCompanyInventory && savedInventoryIsPlaceholder) {
+    const hasReservedOrObsolete = Array.isArray(inventory) && inventory.some((cat) =>
+        Array.isArray(cat.items) && cat.items.some((it) =>
+            it && (it.status === 'Reserved' || (it.location && it.location.toLowerCase().includes('coast')) || (it.notes && it.notes.toLowerCase().includes('reserved')))
+        )
+    );
+
+    if (hasRealCompanyInventory && (savedInventoryIsPlaceholder || hasReservedOrObsolete)) {
         inventory = structuredClone(window.PHENMO_COMPANY_INVENTORY);
     }
 
@@ -374,21 +382,6 @@ function normalizeStoredState(savedState) {
                     notes: '2 units consolidated: 1 Available (SN: GCC650293 - knob missing), 1 Faulty (SN: GCC650294). Location: In Store'
                 },
                 {
-                    primaryId: 'eq-0012',
-                    deleteIds: ['eq-0013'],
-                    name: 'QSC K12 1000W 12" Loudspeaker',
-                    model: 'K12',
-                    subCategory: 'SPEAKERS',
-                    available: 0,
-                    quantity: 2,
-                    status: 'Reserved',
-                    condition: 'Good',
-                    location: 'Donated to Church',
-                    serialNumber: 'GDF540493',
-                    serials: ['GDF540493', 'GDF540494'],
-                    notes: '2 units consolidated (2 Reserved - Donated to Church; SN: GDF540493, GDF540494 casing worn/vibrates). Location: Donated to Church'
-                },
-                {
                     primaryId: 'eq-0014',
                     deleteIds: ['eq-0015'],
                     name: 'HK PR:O 10 XA 600W 10" Monitor',
@@ -419,36 +412,6 @@ function normalizeStoredState(savedState) {
                     notes: '2 units consolidated (FIXED). Location: In Store'
                 },
                 {
-                    primaryId: 'eq-0020',
-                    deleteIds: ['eq-0021', 'eq-0022'],
-                    name: 'ECOXGEAR Portable Speaker',
-                    model: 'GDI-EXBM901',
-                    subCategory: 'SPEAKERS',
-                    available: 0,
-                    quantity: 3,
-                    status: 'Reserved',
-                    condition: 'Faulty',
-                    location: 'Lost in Coast',
-                    serialNumber: 'HAI160920052',
-                    serials: ['HAI160920052', 'HAI161936486'],
-                    notes: '3 units consolidated: 2 Reserved, 1 Faulty (burned fuse). Location: Lost in Coast'
-                },
-                {
-                    primaryId: 'eq-0023',
-                    deleteIds: ['eq-0024', 'eq-0025'],
-                    name: 'JBL PARTYBOX 300 Bluetooth Speaker',
-                    model: 'CMIIT ID: 2018DJ5033',
-                    subCategory: 'SPEAKERS',
-                    available: 0,
-                    quantity: 3,
-                    status: 'Reserved',
-                    condition: 'Excellent',
-                    location: 'Lost in Coast',
-                    serialNumber: 'TL0699-BJ003815',
-                    serials: ['TL0699-BJ003815', 'TL0699-DJ0042539', 'TL0699-BJ0038053'],
-                    notes: '3 units consolidated (3 Reserved). Location: Lost in Coast'
-                },
-                {
                     primaryId: 'eq-0026',
                     deleteIds: ['eq-0027'],
                     name: 'HK 12" Stage Monitor',
@@ -462,21 +425,6 @@ function normalizeStoredState(savedState) {
                     serialNumber: 'A01-1047-20271701',
                     serials: ['A01-1047-20271701', 'A01-1047-20271702'],
                     notes: '2 units consolidated. Location: In Store'
-                },
-                {
-                    primaryId: 'eq-0029',
-                    deleteIds: ['eq-0030'],
-                    name: 'PIONEER DDJ SX DJ Console',
-                    model: 'DDJ SX',
-                    subCategory: 'DJ GEAR',
-                    available: 0,
-                    quantity: 2,
-                    status: 'Reserved',
-                    condition: 'Good',
-                    location: 'Sold',
-                    serialNumber: 'MEHN004685DA',
-                    serials: ['MEHN004685DA', 'MHHN008100DA'],
-                    notes: '2 units consolidated (1 Reserved - ADAPTER MISSING, 1 Broken/Faulty - CROSS FADER). Location: Sold'
                 },
                 {
                     primaryId: 'eq-0036',
@@ -555,6 +503,22 @@ function normalizeStoredState(savedState) {
         }
     }
 
+    // Strip any reserved and lost-in-coast equipment items from all departments
+    if (Array.isArray(inventory)) {
+        inventory.forEach((cat) => {
+            if (Array.isArray(cat.items)) {
+                cat.items = cat.items.filter((it) => {
+                    if (!it) return false;
+                    const isCoast = (it.location && it.location.toLowerCase().includes('coast')) ||
+                                    (it.notes && it.notes.toLowerCase().includes('coast'));
+                    const isReserved = it.status === 'Reserved' ||
+                                       (it.notes && it.notes.toLowerCase().includes('reserved'));
+                    return !isCoast && !isReserved;
+                });
+            }
+        });
+    }
+
     return {
         ...fallbackState,
         ...savedState,
@@ -566,9 +530,25 @@ function normalizeStoredState(savedState) {
 }
 
 function getStoredState() {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    let saved = localStorage.getItem(STORAGE_KEY);
 
     if (!saved) {
+        // Migrate from legacy browser caches (phenmo-staff-portal-v1)
+        if (Array.isArray(LEGACY_STORAGE_KEYS)) {
+            for (const oldKey of LEGACY_STORAGE_KEYS) {
+                const oldData = localStorage.getItem(oldKey);
+                if (oldData) {
+                    try {
+                        const parsed = JSON.parse(oldData);
+                        const normalized = normalizeStoredState(parsed);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+                        localStorage.removeItem(oldKey);
+                        return normalized;
+                    } catch (e) {}
+                }
+            }
+        }
+
         const defaultState = getDefaultState();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultState));
         return defaultState;
@@ -1068,7 +1048,7 @@ function initLoginPage() {
         const selectedAccount = (state.accounts || []).find((acc) => acc.id === selectedAccountId) || {
             id: 'steve',
             name: 'Steve',
-            role: 'Admin'
+            role: 'Managing Director'
         };
 
         // Update cards highlight

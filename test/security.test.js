@@ -1,6 +1,8 @@
 process.env.DATA_STORE = 'sqlite';
 const assert = require('node:assert');
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function request(options, data) {
     return new Promise((resolve, reject) => {
@@ -82,9 +84,47 @@ async function runTests() {
         const assetExpectations = [
             ['/phenmo-logo.jpg', 'image/jpeg'],
             ['/Images/sound.jpg', 'image/jpeg'],
+            ['/Images/concert-line-array-sound.jpg', 'image/jpeg'],
+            ['/Images/high-definition-led-screen.jpg', 'image/jpeg'],
             ['/Images/led%20screen.jpg', 'image/jpeg'],
             ['/style.css', 'text/css'],
-            ['/staff-portal/manifest.json', 'application/json']
+            ['/staff-portal/manifest.json', 'application/json'],
+            ['/robots.txt', 'text/plain'],
+            ['/sitemap.xml', 'application/xml'],
+            ['/Images/outdoor-audio-speaker-stacks.jpg', 'image/jpeg'],
+            ['/Images/live-stage-sound-system.jpg', 'image/jpeg'],
+            ['/Images/african-cultural-stage-decor.jpg', 'image/jpeg'],
+            ['/Images/church-sanctuary-led-stage.jpg', 'image/jpeg'],
+            ['/Images/outdoor-church-conference-stage.jpg', 'image/jpeg'],
+            ['/Images/royal-brains-school-graduation-stage.jpg', 'image/jpeg'],
+            ['/Images/outdoor-church-crusade-choir-production.jpg', 'image/jpeg'],
+            ['/Images/multicolor-sunburst-stage-drapes.jpg', 'image/jpeg'],
+            ['/Images/luxury-ballroom-conference-styling.jpg', 'image/jpeg'],
+            ['/Images/sanctuary-stage-led-display.jpg', 'image/jpeg'],
+            ['/Images/phenmo-ballroom-led-video-wall.jpg', 'image/jpeg'],
+            ['/Images/luxury-ballroom-stage-led-lighting-setup.jpg', 'image/jpeg'],
+            ['/Images/event-dj-booth-lighting-sound-setup.jpg', 'image/jpeg'],
+            ['/Images/luxury-tufted-dj-booth-yamaha-audio.jpg', 'image/jpeg'],
+            ['/Images/desert-sunset-vip-dj-booth.jpg', 'image/jpeg'],
+            ['/Images/phenmo-branded-pioneer-dj-console.jpg', 'image/jpeg'],
+            ['/Images/nightclub-lounge-pioneer-dj-setup.jpg', 'image/jpeg'],
+            ['/Images/outdoor-pergola-pioneer-cdj-rig.jpg', 'image/jpeg'],
+            ['/Images/graduation-marquee-letters-balloon-arch.jpg', 'image/jpeg'],
+            ['/Images/outdoor-vip-garden-stage-led-display.jpg', 'image/jpeg'],
+            ['/Images/thematic-kids-party-chiavari-chairs-setup.jpg', 'image/jpeg'],
+            ['/Images/pj-masks-thematic-backdrop-dessert-table.jpg', 'image/jpeg'],
+            ['/Images/garden-high-peak-pagoda-marquee-decor.jpg', 'image/jpeg'],
+            ['/Images/ballroom-banquet-moving-head-stage-lighting.jpg', 'image/jpeg'],
+            ['/Images/outdoor-stage-starlight-led-backdrop-lighting.jpg', 'image/jpeg'],
+            ['/Images/ballroom-kaleidoscope-rgb-led-dancefloor.jpg', 'image/jpeg'],
+            ['/Images/interactive-kaleidoscope-led-dancefloor-testing.jpg', 'image/jpeg'],
+            ['/Images/vip-banquet-table-led-dancefloor-staging.jpg', 'image/jpeg'],
+            ['/Videos/led-dancefloor-interactive-demo.mp4', 'video/mp4'],
+            ['/Videos/rgb-led-dancefloor-light-show.mp4', 'video/mp4'],
+            ['/Videos/led-dancefloor-video-1.mp4', 'video/mp4'],
+            ['/Videos/led-dancefloor-video-2.mp4', 'video/mp4'],
+            ['/Videos/led-dancefloor-video-3.mp4', 'video/mp4'],
+            ['/Videos/event-stage-lighting-showcase.mp4', 'video/mp4']
         ];
         for (const [assetPath, expectedType] of assetExpectations) {
             // assetPath is already URL-encoded where needed — do not re-encode it.
@@ -99,7 +139,52 @@ async function runTests() {
             assert.ok(res.headers['content-type'].startsWith(expectedType),
                 `${assetPath} should be ${expectedType}, got ${res.headers['content-type']}`);
         }
-        console.log('  Passed: Logo, spaced image names, CSS and manifest all serve correctly.');
+        console.log('  Passed: Logo, spaced image names, CSS, manifest, robots.txt, sitemap.xml, sound, decor, church event images, and MP4 videos all serve correctly.');
+
+        // Verify HTTP byte-range request streaming (HTTP 206) for video playback
+        const rangeRes = await new Promise((resolve, reject) => {
+            const req = http.request({
+                port,
+                path: '/Videos/led-dancefloor-interactive-demo.mp4',
+                method: 'GET',
+                headers: { 'Range': 'bytes=0-99' }
+            });
+            req.on('response', resolve);
+            req.on('error', reject);
+            req.end();
+        });
+        rangeRes.resume();
+        assert.strictEqual(rangeRes.statusCode, 206, 'Byte range request must return 206 Partial Content');
+        assert.strictEqual(rangeRes.headers['accept-ranges'], 'bytes', 'Must declare Accept-Ranges: bytes');
+        assert.ok(rangeRes.headers['content-range'] && rangeRes.headers['content-range'].startsWith('bytes 0-99/'), 'Must provide Content-Range header');
+        console.log('  Passed: HTTP 206 Partial Content byte-range streaming verified for MP4 videos (smooth seeking & iOS playback).');
+
+        // Verify JSON-LD Schema on index.html
+        const publicDir = path.resolve(__dirname, '..');
+        const indexHtml = fs.readFileSync(path.join(publicDir, 'index.html'), 'utf8');
+        const scriptMatch = indexHtml.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+        assert.ok(scriptMatch, 'index.html must contain a JSON-LD structured data block');
+        const parsedSchema = JSON.parse(scriptMatch[1]);
+        assert.ok(parsedSchema['@graph'], 'Schema must declare a top-level @graph');
+        const biz = parsedSchema['@graph'].find(item => item['@id'] && item['@id'].includes('localbusiness'));
+        assert.ok(biz, 'Schema must contain LocalBusiness entity');
+        assert.strictEqual(biz.aggregateRating.ratingValue, '5.0');
+        assert.strictEqual(biz.review.length, 3, 'Schema must contain 3 client reviews');
+        console.log('  Passed: JSON-LD LocalBusiness, AggregateRating, and Review schema parsed and validated.');
+
+        // Verify Service Detail Modal Window & Header/Footer Controls on index.html
+        assert.ok(indexHtml.includes('id="service-detail-modal"'), 'index.html must contain service-detail-modal');
+        assert.ok(indexHtml.includes('id="modal-header-back"'), 'Modal must have a top header Back button');
+        assert.ok(indexHtml.includes('id="modal-footer-back"'), 'Modal must have a bottom footer Back button');
+        assert.ok(indexHtml.includes('id="modal-header-book"'), 'Modal must have a top header Book Now button');
+        assert.ok(indexHtml.includes('id="modal-footer-book"'), 'Modal must have a bottom footer Book Now button');
+        assert.ok(indexHtml.includes('outdoor-audio-speaker-stacks.jpg'), 'Modal sound catalog must reference outdoor speaker stacks photo');
+        assert.ok(indexHtml.includes('live-stage-sound-system.jpg'), 'Modal sound catalog must reference live stage sound system photo');
+        assert.ok(indexHtml.includes('modal-slide-prev-btn'), 'Modal must have slideshow previous button');
+        assert.ok(indexHtml.includes('modal-slide-next-btn'), 'Modal must have slideshow next button');
+        assert.ok(indexHtml.includes('modal-slideshow-toggle'), 'Modal must have slideshow play/pause toggle button');
+        assert.ok(indexHtml.includes('initShowcaseCardSlideshows'), 'index.html must declare initShowcaseCardSlideshows function');
+        console.log('  Passed: Service Detail Modal with Controls and Homepage Showcase Card Slideshows verified.');
 
         // --- 3. Password change now requires the current password ---
         console.log('Test 3: Password change requires the current password');

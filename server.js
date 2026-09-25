@@ -47,7 +47,13 @@ const MIME_TYPES = {
     '.ico': 'image/x-icon',
     '.woff2': 'font/woff2',
     '.woff': 'font/woff',
-    '.ttf': 'font/ttf'
+    '.ttf': 'font/ttf',
+    '.txt': 'text/plain; charset=utf-8',
+    '.xml': 'application/xml; charset=utf-8',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mov': 'video/quicktime',
+    '.m4v': 'video/x-m4v'
 };
 
 function getCorsOrigin(req) {
@@ -208,7 +214,7 @@ const server = http.createServer(async (req, res) => {
                     return sendJson(res, 200, {
                         success: true,
                         requiresSetup: false,
-                        message: 'Account setup complete. Admin Steve has been notified of your first login.',
+                        message: 'Account setup complete. Managing Director Steve has been notified of your first login.',
                         account: safeAccount
                     }, req);
                 } catch (err) {
@@ -416,7 +422,12 @@ const server = http.createServer(async (req, res) => {
         filePath = path.join(filePath, 'index.html');
     }
 
-    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    if (!fs.existsSync(filePath)) {
+        return sendPlain(res, 404, '404 Not Found');
+    }
+
+    const stat = fs.statSync(filePath);
+    if (!stat.isFile()) {
         return sendPlain(res, 404, '404 Not Found');
     }
 
@@ -428,20 +439,51 @@ const server = http.createServer(async (req, res) => {
         .find((candidate) => lowerPath.endsWith(candidate));
     const contentType = MIME_TYPES[matchedExt] || 'application/octet-stream';
 
-    const stream = fs.createReadStream(filePath);
-    stream.on('error', () => {
-        if (!res.headersSent) {
-            sendPlain(res, 500, '500 Server Error');
-        } else {
-            res.destroy();
-        }
-    });
-
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Accept-Ranges', 'bytes');
     applySecurityHeaders(res);
-    res.writeHead(200);
-    stream.pipe(res);
+
+    // Support HTTP Range requests for video seeking and smooth mobile/iOS Safari playback
+    const range = req.headers.range;
+    if (range && stat.size > 0) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+
+        if (isNaN(start) || isNaN(end) || start >= stat.size || end >= stat.size || start > end) {
+            res.setHeader('Content-Range', `bytes */${stat.size}`);
+            return sendPlain(res, 416, '416 Range Not Satisfiable');
+        }
+
+        const chunksize = (end - start) + 1;
+        const stream = fs.createReadStream(filePath, { start, end });
+        stream.on('error', () => {
+            if (!res.headersSent) {
+                sendPlain(res, 500, '500 Server Error');
+            } else {
+                res.destroy();
+            }
+        });
+
+        res.setHeader('Content-Range', `bytes ${start}-${end}/${stat.size}`);
+        res.setHeader('Content-Length', chunksize);
+        res.writeHead(206);
+        stream.pipe(res);
+    } else {
+        const stream = fs.createReadStream(filePath);
+        stream.on('error', () => {
+            if (!res.headersSent) {
+                sendPlain(res, 500, '500 Server Error');
+            } else {
+                res.destroy();
+            }
+        });
+
+        res.setHeader('Content-Length', stat.size);
+        res.writeHead(200);
+        stream.pipe(res);
+    }
 });
 
 if (require.main === module) {

@@ -47,7 +47,8 @@ async function runTests() {
         assert.strictEqual(accRes.status, 200);
         assert.ok(Array.isArray(accRes.data));
         assert.ok(accRes.data.length >= 3);
-        assert.ok(accRes.data.some(a => a.id === 'steve' && a.role === 'Admin'));
+        assert.ok(accRes.data.some(a => a.id === 'steve' && a.role === 'Managing Director'));
+        assert.ok(accRes.data.some(a => a.id === 'mariah' && a.role === 'Admin'));
         assert.strictEqual(accRes.data[0].password, undefined, 'Passwords must not be exposed');
         console.log('  Passed: Accounts returned safely.');
 
@@ -89,9 +90,9 @@ async function runTests() {
         // - 12 stage double clamps -> 1 row (-11)
         // - 29 stage velcro plates -> 1 row (-28)
         // - 38 multi-unit audio items (14 models) -> 14 rows (-24)
-        // Total rows: 538 rows.
-        assert.strictEqual(totalItemsCount, 538, 'Expected 538 rows after CYCLOPS, stage items, and audio model consolidation');
-        console.log(`  Passed: 7 departments with 538 consolidated inventory rows.`);
+        // Total rows: 421 rows (after purging 117 lost in coast and reserved unrecoverable items).
+        assert.strictEqual(totalItemsCount, 421, 'Expected 421 rows after purging reserved/lost-in-coast items and consolidating');
+        console.log(`  Passed: 7 departments with 421 active inventory rows.`);
 
         // 3a. Consolidated CYCLOPS row keeps its unit count and serial numbers
         console.log('Test 3a: Consolidated CYCLOPS MOVING HEAD row');
@@ -193,7 +194,7 @@ async function runTests() {
         // 3l. Test Consolidated Audio & Sound models
         console.log('Test 3l: Consolidated Audio & Sound models');
         const audio = invRes.data.find((c) => c.id === 'audio');
-        assert.strictEqual(audio.items.length, 41, 'Audio items must be consolidated from 65 to 41 rows');
+        assert.strictEqual(audio.items.length, 29, 'Audio items must be consolidated into 29 active rows (after purging reserved/lost)');
 
         // Check KW153 model row
         const kw153 = audio.items.find((i) => i.id === 'eq-0010');
@@ -220,7 +221,7 @@ async function runTests() {
         const pgLookup = await request({ port, path: '/api/inventory/lookup?code=3PK1707915', method: 'GET' });
         assert.strictEqual(pgLookup.status, 200, 'Secondary serial 3PK1707915 must resolve');
         assert.strictEqual(pgLookup.data.id, 'eq-0041', 'Must resolve to primary PG58 row');
-        console.log('  Passed: Audio models compiled into 41 rows with unit counts and barcode lookups intact.');
+        console.log('  Passed: Audio models compiled into 29 active rows with unit counts and barcode lookups intact.');
 
         // Pick dynamic real test item
         const testItem = invRes.data[0].items[0];
@@ -347,7 +348,7 @@ async function runTests() {
         console.log('  Passed: Default password 0000 correctly flagged for first-time account setup.');
 
         // 13. Test POST /api/auth/setup (Complete setup and notify Steve)
-        console.log('Test 13: POST /api/auth/setup activates account & notifies Admin Steve');
+        console.log('Test 13: POST /api/auth/setup activates account & notifies Managing Director Steve');
         const setupRes = await request({ port, path: '/api/auth/setup', method: 'POST' }, {
             accountId: 'mariah',
             email: 'mariah.lead@phenmoevents.co.ke',
@@ -362,10 +363,10 @@ async function runTests() {
         const steveMessages = await request({ port, path: '/api/messages?userId=steve', method: 'GET' });
         assert.strictEqual(steveMessages.status, 200);
         const alertMsg = steveMessages.data.find(m => m.text && m.text.includes('First Staff Login Alert') && m.text.includes('Mariah'));
-        assert.ok(alertMsg, 'Admin Steve must receive an automated alert message for Mariah\'s first setup');
+        assert.ok(alertMsg, 'Managing Director Steve must receive an automated alert message for Mariah\'s first setup');
         assert.ok(alertMsg.text.includes('mariah.lead@phenmoevents.co.ke'));
         assert.ok(alertMsg.text.includes('Android Phone (Phenmo App)'));
-        console.log('  Passed: Permanent email captured, new password set, and Admin Steve notified.');
+        console.log('  Passed: Permanent email captured, new password set, and Managing Director Steve notified.');
 
         // 14. Test Routine Login with registered email & new password (NO Admin notification)
         console.log('Test 14: Routine login with permanent email & new password (No notification)');

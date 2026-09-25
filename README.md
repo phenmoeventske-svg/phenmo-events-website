@@ -13,7 +13,7 @@ A modern, responsive event production marketing website combined with an install
 
 ### Staff Operations Portal (`staff-portal/`)
 - **PWA Ready**: Installable on Android, iOS, Windows, and macOS with offline support via Service Workers.
-- **Consolidated Inventory Management**: 538 consolidated equipment model rows representing 776 physical warehouse assets across 7 departments:
+- **Consolidated Inventory Management**: 421 consolidated active equipment model rows across 7 departments:
   - *Audio & Sound, Visual & Lighting, Stage & Staging, Rigging & Stands, Cables & Interconnects, Power & Distribution, Hardware & Cases*.
 - **Barcode & QR Scanner**: Real-time hardware identification by individual serial numbers stored in PostgreSQL `JSONB` arrays.
 - **Event Planning & Equipment Booking**: Schedule events, allocate gear, detect stock shortages, and record return conditions with damage photo reporting.
@@ -104,8 +104,8 @@ Once the security gate is unlocked, choose your account:
 
 | Staff Member | Role | Initial Default Password | Work Email |
 | :--- | :--- | :--- | :--- |
-| **Steve** | Admin | `0000` | `steve@phenmoevents.co.ke` |
-| **Mariah** | Manager | `0000` | `mariah@phenmoevents.co.ke` |
+| **Steve** | Managing Director | `0000` | `steve@phenmoevents.co.ke` |
+| **Mariah** | Admin | `0000` | `mariah@phenmoevents.co.ke` |
 | **Dave** | Technician | `0000` | `dave@phenmoevents.co.ke` |
 
 *Signing in with the initial default code `0000` launches the one-time activation wizard to set your personal password and permanent work email.*

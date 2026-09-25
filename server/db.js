@@ -108,6 +108,11 @@ function initSchema() {
     } catch (e) {
         // Table may not have been created yet on first boot
     }
+
+    try {
+        db.prepare("UPDATE accounts SET role = 'Managing Director' WHERE id = 'steve' AND role = 'Admin'").run();
+        db.prepare("UPDATE accounts SET role = 'Admin' WHERE id = 'mariah' AND role = 'Manager'").run();
+    } catch (e) {}
 }
 
 // Seed default data if database is brand new
@@ -119,8 +124,8 @@ function seedIfEmpty() {
             VALUES (?, ?, ?, ?, ?)
         `);
 
-        insertAccount.run('steve', 'Steve', 'Admin', 'steve@phenmoevents.co.ke', normalizeStoredPassword('0000'));
-        insertAccount.run('mariah', 'Mariah', 'Manager', 'mariah@phenmoevents.co.ke', normalizeStoredPassword('0000'));
+        insertAccount.run('steve', 'Steve', 'Managing Director', 'steve@phenmoevents.co.ke', normalizeStoredPassword('0000'));
+        insertAccount.run('mariah', 'Mariah', 'Admin', 'mariah@phenmoevents.co.ke', normalizeStoredPassword('0000'));
         insertAccount.run('dave', 'Dave', 'Technician', 'dave@phenmoevents.co.ke', normalizeStoredPassword('0000'));
     }
 
@@ -442,7 +447,7 @@ module.exports = {
         const normalizedPassword = normalizeStoredPassword(cleanPassword);
         db.prepare('UPDATE accounts SET email = ?, password = ? WHERE id = ?').run(cleanEmail, normalizedPassword, accountId);
 
-        // Send activation notification to Admin Steve
+        // Send activation notification to Managing Director Steve
         const now = new Date();
         const timeFormatted = now.toLocaleString('en-GB', {
             day: '2-digit',

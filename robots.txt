@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /staff-portal/
+Disallow: /data/
+Disallow: /server/
+
+Sitemap: https://phenmoevents.co.ke/sitemap.xml
+
